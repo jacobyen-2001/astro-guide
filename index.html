@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天文研究者的開發環境設定指南</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --space-dark: #0a0e1a;
+    --space-mid: #111827;
+    --space-card: #161d2e;
+    --space-border: #1e2d4a;
+    --star-blue: #4f9cf9;
+    --nebula-purple: #9b6dff;
+    --aurora-cyan: #22d3ee;
+    --pulsar-orange: #f97316;
+    --success-green: #34d399;
+    --text-primary: #e8edf7;
+    --text-secondary: #8fa4c8;
+    --text-muted: #4a6080;
+    --code-bg: #0d1117;
+    --code-border: #21303f;
+    --route-a: #4f9cf9;
+    --route-b: #9b6dff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Grotesk', 'Noto Serif TC', sans-serif;
+    background-color: var(--space-dark);
+    color: var(--text-primary);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Starfield background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 55% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 65% 55%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 42% 32%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(2px 2px at 5% 90%, rgba(79,156,249,0.6) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 95% 60%, rgba(155,109,255,0.5) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 72px 0 48px;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,156,249,0.1);
+    border: 1px solid rgba(79,156,249,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--star-blue);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #e8edf7 0%, var(--star-blue) 40%, var(--nebula-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+
+  .hero-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    max-width: 560px;
+    margin: 0 auto 40px;
+  }
+
+  /* Route selector */
+  .route-tabs {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .route-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s;
+    text-decoration: none;
+  }
+
+  .route-tab-a {
+    background: rgba(79,156,249,0.1);
+    border-color: rgba(79,156,249,0.4);
+    color: var(--star-blue);
+  }
+  .route-tab-a:hover { background: rgba(79,156,249,0.2); border-color: var(--star-blue); }
+
+  .route-tab-b {
+    background: rgba(155,109,255,0.1);
+    border-color: rgba(155,109,255,0.4);
+    color: var(--nebula-purple);
+  }
+  .route-tab-b:hover { background: rgba(155,109,255,0.2); border-color: var(--nebula-purple); }
+
+  /* Section */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--space-border);
+  }
+
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue { background: rgba(79,156,249,0.15); }
+  .icon-purple { background: rgba(155,109,255,0.15); }
+  .icon-cyan { background: rgba(34,211,238,0.15); }
+  .icon-orange { background: rgba(249,115,22,0.15); }
+
+  .section-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* Route label */
+  .route-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .route-label-a { background: rgba(79,156,249,0.15); color: var(--star-blue); border: 1px solid rgba(79,156,249,0.3); }
+  .route-label-b { background: rgba(155,109,255,0.15); color: var(--nebula-purple); border: 1px solid rgba(155,109,255,0.3); }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .step {
+    background: var(--space-card);
+    border: 1px solid var(--space-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .step:hover { border-color: var(--text-muted); }
+
+  .step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px;
+  }
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-num-blue { background: rgba(79,156,249,0.2); color: var(--star-blue); border: 1px solid rgba(79,156,249,0.4); }
+  .step-num-purple { background: rgba(155,109,255,0.2); color: var(--nebula-purple); border: 1px solid rgba(155,109,255,0.4); }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .step-desc {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 16px 24px;
+    position: relative;
+  }
+
+  .code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #161b22;
+    padding: 8px 16px;
+    border-top: 1px solid var(--code-border);
+    border-bottom: 1px solid var(--code-border);
+  }
+
+  .code-block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .code-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .dot-red { background: #ff5f57; }
+  .dot-yellow { background: #ffbd2e; }
+  .dot-green { background: #28c840; }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c9d1d9;
+    overflow-x: auto;
+    padding: 16px 0 4px;
+  }
+
+  .c-comment { color: #6a7f9a; }
+  .c-keyword { color: #ff7b72; }
+  .c-string { color: #a5d6ff; }
+  .c-var { color: #79c0ff; }
+  .c-cmd { color: #d2a8ff; }
+  .c-flag { color: #ffa657; }
+  .c-success { color: var(--success-green); }
+  .c-path { color: #e3b341; }
+
+  /* Callout */
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin: 14px 0 0;
+    font-size: 13.5px;
+  }
+
+  .callout-info {
+    background: rgba(79,156,249,0.08);
+    border: 1px solid rgba(79,156,249,0.2);
+    color: #93c5fd;
+  }
+
+  .callout-warn {
+    background: rgba(249,115,22,0.08);
+    border: 1px solid rgba(249,115,22,0.25);
+    color: #fdba74;
+  }
+
+  .callout-success {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.25);
+    color: #6ee7b7;
+  }
+
+  .callout-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* Diagram */
+  .diagram {
+    background: var(--space-card);
+    border: 1px solid var(--space-border);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 24px 0;
+  }
+
+  .diagram-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .flow-box {
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .flow-box-blue { background: rgba(79,156,249,0.15); border: 1px solid rgba(79,156,249,0.35); color: var(--star-blue); }
+  .flow-box-purple { background: rgba(155,109,255,0.15); border: 1px solid rgba(155,109,255,0.35); color: var(--nebula-purple); }
+  .flow-box-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.3); color: var(--aurora-cyan); }
+  .flow-box-orange { background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.3); color: var(--pulsar-orange); }
+  .flow-box-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--success-green); }
+
+  .flow-arrow { color: var(--text-muted); font-size: 18px; }
+
+  /* Terminal mockup */
+  .terminal {
+    background: #0f1117;
+    border: 1px solid #2a3548;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 14px 0 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .terminal-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #1a2232;
+    border-bottom: 1px solid #2a3548;
+  }
+
+  .terminal-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex: 1;
+    text-align: center;
+  }
+
+  .terminal-body {
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+  }
+
+  .t-prompt { color: var(--success-green); }
+  .t-path { color: var(--star-blue); }
+  .t-cmd { color: var(--text-primary); }
+  .t-out { color: #6a8a9f; }
+
+  /* SSH diagram */
+  .ssh-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 28px;
+    flex-wrap: wrap;
+  }
+
+  .ssh-machine {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--space-border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    text-align: center;
+    min-width: 140px;
+  }
+
+  .ssh-machine-icon { font-size: 32px; margin-bottom: 8px; }
+  .ssh-machine-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .ssh-machine-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .ssh-tunnel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ssh-line {
+    height: 2px;
+    width: 80px;
+    background: linear-gradient(90deg, rgba(155,109,255,0.3), rgba(155,109,255,0.8), rgba(155,109,255,0.3));
+    position: relative;
+  }
+
+  .ssh-label {
+    font-size: 10px;
+    color: var(--nebula-purple);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--space-border);
+    margin: 48px 0;
+  }
+
+  /* Bottom note */
+  .bottom-note {
+    text-align: center;
+    padding: 40px 0 60px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .bottom-note strong { color: var(--text-secondary); }
+
+  /* Inline code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: rgba(79,156,249,0.1);
+    color: var(--aurora-cyan);
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(79,156,249,0.15);
+  }
+
+  /* Visual label */
+  .visual-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .visual-label::after { content: ''; flex: 1; height: 1px; background: var(--space-border); }
+
+  ul.note-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  ul.note-list li {
+    display: flex;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+
+  ul.note-list li::before {
+    content: '›';
+    color: var(--star-blue);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Package table */
+  .pkg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .pkg-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--space-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+  }
+
+  .pkg-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--aurora-cyan);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .pkg-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">🔭 天文研究者的環境設定指南</div>
+    <h1>告別複製貼上，<br>建立你的 Python 工作流程</h1>
+    <p class="hero-subtitle">
+      兩條路徑任選：在 Server 上用 Jupyter Lab 做互動式分析，或透過 VSCode Remote SSH 直接在本機操作遠端伺服器。
+    </p>
+    <div class="route-tabs">
+      <a class="route-tab route-tab-a" href="#route-a">🪐 路線 A — Jupyter Lab</a>
+      <a class="route-tab route-tab-b" href="#route-b">🛸 路線 B — VSCode Remote SSH</a>
+    </div>
+  </div>
+
+  <!-- OVERVIEW FLOW -->
+  <div class="diagram">
+    <div class="diagram-title">整體架構概覽</div>
+    <div class="flow">
+      <div class="flow-box flow-box-blue">你的 Mac</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box flow-box-purple">SSH 連線</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box flow-box-cyan">老師的 Server</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box flow-box-orange">Miniconda<br>Virtual Env</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box flow-box-green">Jupyter / VSCode</div>
+    </div>
+  </div>
+
+  <!-- ===== ROUTE A ===== -->
+  <div id="route-a" class="section">
+    <div class="route-label route-label-a">🪐 路線 A</div>
+    <div class="section-header">
+      <div class="section-icon icon-blue">📦</div>
+      <div>
+        <div class="section-title">在 Server 安裝 Miniconda3 並建立 Virtual Env</div>
+        <div class="section-desc">一次設定，永久受益。讓每個專案有乾淨獨立的 Python 環境。</div>
+      </div>
+    </div>
+
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-blue">1</div>
+          <div class="step-content">
+            <div class="step-title">SSH 進入 Server</div>
+            <div class="step-desc">打開 Mac 的 <strong>Terminal</strong>（Command+Space 搜尋 Terminal），連線到老師的伺服器。</div>
+          </div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar">
+            <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+            <div class="terminal-title">Terminal — zsh</div>
+            <div style="width:44px"></div>
+          </div>
+          <div class="terminal-body">
+<span class="t-prompt">❯</span> <span class="t-cmd">ssh username@server.address</span>
+<span class="t-out"># 輸入密碼後，你就進入 server 了</span>
+<span class="t-prompt">username@server</span><span class="t-path">:~$</span> <span class="t-cmd">_</span>
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin: 0 24px 16px;">
+          <span class="callout-icon">💡</span>
+          <span><code>username</code> 和 <code>server.address</code> 換成老師給你的帳號和 IP/hostname。</span>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-blue">2</div>
+          <div class="step-content">
+            <div class="step-title">下載並安裝 Miniconda3</div>
+            <div class="step-desc">Miniconda 是輕量版的 Anaconda，只帶 conda 本身，其他套件自己裝，乾淨很多。以下指令在 <strong>Server 上</strong>執行。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">bash — server</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 下載 Miniconda3 安裝腳本（Linux x86_64，server 通常是這個）</span>
+<span class="c-cmd">wget</span> https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+<span class="c-comment"># 執行安裝</span>
+<span class="c-cmd">bash</span> Miniconda3-latest-Linux-x86_64.sh
+
+<span class="c-comment"># 安裝過程中按 Enter 確認、輸入 yes 接受 license，
+# 最後問要不要 auto-activate → 建議輸入 yes</span></pre>
+        </div>
+        <div class="callout callout-warn" style="margin: 0 24px 16px;">
+          <span class="callout-icon">⚠️</span>
+          <span>安裝完後需要重新開啟 terminal（或執行 <code>source ~/.bashrc</code>）才會生效。此時 prompt 前面會出現 <code>(base)</code>。</span>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-blue">3</div>
+          <div class="step-content">
+            <div class="step-title">建立 Virtual Environment（虛擬環境）</div>
+            <div class="step-desc">為每個研究專案建立獨立環境，套件版本不會互相衝突。以天文分析為例，建立一個叫 <code>astro</code> 的環境。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">bash — server</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 建立環境，指定 Python 版本（建議 3.11）</span>
+<span class="c-cmd">conda create</span> <span class="c-flag">-n</span> astro <span class="c-var">python=3.11</span>
+
+<span class="c-comment"># 啟動環境（prompt 會從 base 變成 astro）</span>
+<span class="c-cmd">conda activate</span> astro
+
+<span class="c-comment"># 確認 Python 路徑正確</span>
+<span class="c-cmd">which python</span>
+<span class="c-success"># → /home/username/miniconda3/envs/astro/bin/python ✓</span></pre>
+        </div>
+        <div class="diagram" style="margin: 12px 24px 16px; padding: 16px 20px;">
+          <div class="diagram-title">虛擬環境架構</div>
+          <div class="flow" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div class="flow-box flow-box-blue" style="min-width:80px; font-size:12px;">miniconda3/</div>
+              <span style="color:var(--text-muted); font-size:12px;">主目錄</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-left: 20px;">
+              <div class="flow-box flow-box-cyan" style="min-width:80px; font-size:12px;">envs/</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-left: 40px;">
+              <div class="flow-box flow-box-green" style="min-width:80px; font-size:12px;">astro/</div>
+              <span style="color:var(--text-muted); font-size:12px;">← 你的天文環境</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-left: 40px;">
+              <div class="flow-box flow-box-orange" style="min-width:80px; font-size:12px;">project2/</div>
+              <span style="color:var(--text-muted); font-size:12px;">← 另一個專案，互不干擾</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-blue">4</div>
+          <div class="step-content">
+            <div class="step-title">安裝常用天文套件</div>
+            <div class="step-desc">確認 <code>(astro)</code> 環境已啟動後，安裝以下套件。</div>
+          </div>
+        </div>
+        <div class="pkg-grid" style="margin: 0 24px 16px;">
+          <div class="pkg-card"><div class="pkg-name">numpy</div><div class="pkg-desc">數值計算基礎</div></div>
+          <div class="pkg-card"><div class="pkg-name">scipy</div><div class="pkg-desc">科學計算、統計</div></div>
+          <div class="pkg-card"><div class="pkg-name">matplotlib</div><div class="pkg-desc">畫圖標配</div></div>
+          <div class="pkg-card"><div class="pkg-name">astropy</div><div class="pkg-desc">天文專用工具庫</div></div>
+          <div class="pkg-card"><div class="pkg-name">pandas</div><div class="pkg-desc">表格資料處理</div></div>
+          <div class="pkg-card"><div class="pkg-name">jupyterlab</div><div class="pkg-desc">互動式 notebook</div></div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">bash — server (astro env)</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 一次裝完所有常用套件</span>
+<span class="c-cmd">pip install</span> numpy scipy matplotlib astropy pandas jupyterlab
+
+<span class="c-comment"># 如果需要 FITS 檔案處理</span>
+<span class="c-cmd">pip install</span> astropy-healpix
+
+<span class="c-comment"># 驗證安裝成功</span>
+<span class="c-cmd">python -c</span> <span class="c-string">"import astropy; print(astropy.__version__)"</span>
+<span class="c-success"># → 6.1.0 （或類似版本號）✓</span></pre>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-blue">5</div>
+          <div class="step-content">
+            <div class="step-title">啟動 Jupyter Lab，並設定 Port Forwarding</div>
+            <div class="step-desc">Jupyter 跑在 server 上，但我們要在 Mac 的瀏覽器裡看到它。這需要兩個步驟。</div>
+          </div>
+        </div>
+
+        <div class="diagram" style="margin: 0 24px 12px;">
+          <div class="diagram-title">Port Forwarding 原理</div>
+          <div class="ssh-diagram">
+            <div class="ssh-machine">
+              <div class="ssh-machine-icon">🖥️</div>
+              <div class="ssh-machine-name">Mac</div>
+              <div class="ssh-machine-sub">localhost:8888</div>
+            </div>
+            <div class="ssh-tunnel">
+              <div class="ssh-label">SSH Tunnel</div>
+              <div class="ssh-line"></div>
+              <div class="ssh-label">Port 8888</div>
+            </div>
+            <div class="ssh-machine">
+              <div class="ssh-machine-icon">🗄️</div>
+              <div class="ssh-machine-name">Server</div>
+              <div class="ssh-machine-sub">localhost:8888</div>
+            </div>
+          </div>
+          <p style="text-align:center; font-size:12px; color:var(--text-muted); margin-top:-8px;">你在 Mac 瀏覽器開 <code>localhost:8888</code>，流量透過 SSH 隧道轉到 server 的 Jupyter</p>
+        </div>
+
+        <div style="font-size: 13px; color: var(--text-secondary); padding: 0 24px 12px;"><strong style="color: var(--text-primary);">步驟 5a</strong>：在 server 上啟動 Jupyter（不開瀏覽器）</div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">bash — server</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-cmd">jupyter lab</span> <span class="c-flag">--no-browser</span> <span class="c-flag">--port=8888</span>
+
+<span class="c-comment"># 會看到一串輸出，包含 token URL，先不用管，複製 token 備用：</span>
+<span class="c-success"># http://localhost:8888/lab?token=abc123xyz...</span></pre>
+        </div>
+
+        <div style="font-size: 13px; color: var(--text-secondary); padding: 12px 24px 12px;"><strong style="color: var(--text-primary);">步驟 5b</strong>：在 Mac 本機<strong>另開一個 Terminal</strong>，建立 SSH tunnel</div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">Terminal — Mac 本機</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># -N 不執行指令、-L 建立 port forwarding</span>
+<span class="c-cmd">ssh</span> <span class="c-flag">-N -L</span> <span class="c-var">8888:localhost:8888</span> username@server.address
+
+<span class="c-comment"># 這個 terminal 掛著就好，不會有輸出</span></pre>
+        </div>
+
+        <div class="callout callout-success" style="margin: 0 24px 16px;">
+          <span class="callout-icon">🚀</span>
+          <span>現在打開 Mac 的 Safari 或 Chrome，輸入 <code>http://localhost:8888</code>，貼上剛才的 token，就能看到 Jupyter Lab 了！</span>
+        </div>
+      </div>
+
+      <!-- STEP 6: 一鍵啟動腳本 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-blue">6</div>
+          <div class="step-content">
+            <div class="step-title">進階：寫一個啟動腳本，以後一行搞定</div>
+            <div class="step-desc">在 server 上建立 <code>start_jupyter.sh</code>，以後只需一個指令。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">~/start_jupyter.sh</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-keyword">#!/bin/bash</span>
+<span class="c-cmd">conda activate</span> astro
+<span class="c-cmd">jupyter lab</span> <span class="c-flag">--no-browser</span> <span class="c-flag">--port=8888</span></pre>
+        </div>
+        <div class="code-block-header" style="border-top: none;">
+          <div class="code-block-label" style="color:var(--text-muted);">讓腳本可執行</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-cmd">chmod +x</span> ~/start_jupyter.sh
+<span class="c-comment"># 之後只需執行：</span>
+<span class="c-cmd">./start_jupyter.sh</span></pre>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+  </div><!-- /route-a -->
+
+  <hr class="divider">
+
+  <!-- ===== ROUTE B ===== -->
+  <div id="route-b" class="section">
+    <div class="route-label route-label-b">🛸 路線 B</div>
+    <div class="section-header">
+      <div class="section-icon icon-purple">⚡</div>
+      <div>
+        <div class="section-title">VSCode Remote SSH — 在本機操作遠端 Server</div>
+        <div class="section-desc">透過設定 SSH config file，VSCode 可以像操作本地資料夾一樣操作 server，還有完整的 IntelliSense 和 debugger。</div>
+      </div>
+    </div>
+
+    <div class="steps">
+
+      <!-- STEP 1 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">1</div>
+          <div class="step-content">
+            <div class="step-title">在 Mac 安裝 VSCode</div>
+            <div class="step-desc">去 <code>code.visualstudio.com</code> 下載 Mac 版本，安裝完後把 VSCode 加入系統 PATH。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">VSCode 內部 — Command Palette</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 在 VSCode 中按下 Cmd+Shift+P 開啟 Command Palette</span>
+<span class="c-comment"># 輸入：Shell Command: Install 'code' command in PATH</span>
+<span class="c-comment"># 按 Enter 執行</span>
+
+<span class="c-comment"># 驗證：在 Terminal 輸入</span>
+<span class="c-cmd">code --version</span>
+<span class="c-success"># → 1.89.x 類似版本號 ✓</span></pre>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">2</div>
+          <div class="step-content">
+            <div class="step-title">安裝 Remote - SSH 擴充套件</div>
+            <div class="step-desc">這是 Microsoft 官方出的擴充，讓 VSCode 可以直接連到遠端 server。</div>
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin: 0 24px 16px;">
+          <span class="callout-icon">📦</span>
+          <span>
+            在 VSCode 左側點擊 Extensions 圖示（四個方塊），搜尋 <strong>Remote - SSH</strong>，選 Microsoft 出品的版本安裝。<br><br>
+            同時也安裝 <strong>Python</strong> 和 <strong>Pylance</strong> 擴充套件，讓 Python 開發體驗更好。
+          </span>
+        </div>
+      </div>
+
+      <!-- STEP 3: SSH Config -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">3</div>
+          <div class="step-content">
+            <div class="step-title">設定 SSH Config File</div>
+            <div class="step-desc">建立 <code>~/.ssh/config</code> 檔案，之後連線只需選擇 host 名稱，不用每次輸入 IP 和帳號。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">Terminal — Mac 本機</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 如果 ~/.ssh/ 目錄不存在，先建立</span>
+<span class="c-cmd">mkdir -p</span> ~/.ssh
+<span class="c-cmd">chmod 700</span> ~/.ssh
+
+<span class="c-comment"># 用 nano 或 vim 編輯（nano 對初學者友善）</span>
+<span class="c-cmd">nano</span> ~/.ssh/config</pre>
+        </div>
+
+        <div style="font-size:13px; color:var(--text-secondary); padding: 12px 24px 8px;">在檔案中加入以下內容：</div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">~/.ssh/config</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 老師的 server（自訂一個你好記的名字）</span>
+<span class="c-keyword">Host</span>        <span class="c-var">astro-server</span>
+    <span class="c-keyword">HostName</span>    <span class="c-string">your.server.ip</span>
+    <span class="c-keyword">User</span>        <span class="c-string">your_username</span>
+    <span class="c-keyword">Port</span>        <span class="c-string">22</span>
+    <span class="c-keyword">ServerAliveInterval</span> <span class="c-string">60</span>
+    <span class="c-keyword">ServerAliveCountMax</span> <span class="c-string">3</span>
+
+<span class="c-comment"># 如果有第二台 server 也可以繼續加</span>
+<span class="c-comment"># Host second-server</span>
+<span class="c-comment">#     HostName 192.168.x.x</span>
+<span class="c-comment">#     User another_user</span></pre>
+        </div>
+
+        <div class="callout callout-info" style="margin: 0 24px 12px;">
+          <span class="callout-icon">📋</span>
+          <span>nano 的儲存方式：<code>Ctrl+O</code> → Enter（確認）→ <code>Ctrl+X</code>（離開）</span>
+        </div>
+
+        <div class="callout callout-warn" style="margin: 0 24px 16px;">
+          <span class="callout-icon">🔐</span>
+          <span><code>ServerAliveInterval 60</code> 和 <code>ServerAliveCountMax 3</code> 可以防止連線閒置太久自動斷掉，天文分析跑很久的時候很重要。</span>
+        </div>
+      </div>
+
+      <!-- STEP 4: SSH Key (optional but recommended) -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">4</div>
+          <div class="step-content">
+            <div class="step-title">設定 SSH Key（免密碼登入，強烈推薦）</div>
+            <div class="step-desc">以後連線不用每次輸入密碼，而且更安全。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">Terminal — Mac 本機</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># 在 Mac 本機產生 SSH 金鑰對（一路按 Enter 用預設值即可）</span>
+<span class="c-cmd">ssh-keygen -t ed25519 -C</span> <span class="c-string">"your_email@example.com"</span>
+
+<span class="c-comment"># 把公鑰複製到 server（會要求輸入一次密碼）</span>
+<span class="c-cmd">ssh-copy-id</span> astro-server
+
+<span class="c-comment"># 之後測試是否不需密碼就能連入</span>
+<span class="c-cmd">ssh</span> astro-server
+<span class="c-success"># → 直接進入 server，不需密碼 ✓</span></pre>
+        </div>
+
+        <div class="diagram" style="margin: 12px 24px 16px; padding: 16px 20px;">
+          <div class="diagram-title">SSH Key 運作原理</div>
+          <div class="flow">
+            <div class="flow-box flow-box-purple" style="font-size:12px;">Mac<br><small style="opacity:0.7">私鑰（id_ed25519）<br>保存在本機</small></div>
+            <div class="flow-arrow">🤝</div>
+            <div class="flow-box flow-box-cyan" style="font-size:12px;">Server<br><small style="opacity:0.7">公鑰（authorized_keys）<br>放在 server</small></div>
+          </div>
+        </div>
+
+        <div style="padding: 0 24px 16px;">
+          <div class="callout callout-info">
+            <span class="callout-icon">💡</span>
+            <span>如果 <code>ssh-copy-id</code> 不存在，可以改用：<br>
+            <code style="display:block; margin-top:6px;">cat ~/.ssh/id_ed25519.pub | ssh astro-server "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"</code></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: Connect via VSCode -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">5</div>
+          <div class="step-content">
+            <div class="step-title">在 VSCode 連接 Server</div>
+            <div class="step-desc">設定好 config 後，連線只需幾個點擊。</div>
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin: 0 24px 12px;">
+          <span class="callout-icon">🖱️</span>
+          <span>
+            <ol style="margin: 8px 0 0 16px; display:flex; flex-direction:column; gap:8px; font-size:13px;">
+              <li>左下角點擊 <strong>><  </strong>（藍色的遠端連線圖示）</li>
+              <li>選擇「Connect to Host...」</li>
+              <li>選擇你剛才設定的 <code>astro-server</code></li>
+              <li>VSCode 會開啟新視窗，左下角變成 <code>SSH: astro-server</code> 即成功</li>
+              <li>點擊 Open Folder，瀏覽 server 上的目錄</li>
+            </ol>
+          </span>
+        </div>
+      </div>
+
+      <!-- STEP 6: Select interpreter -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">6</div>
+          <div class="step-content">
+            <div class="step-title">在 VSCode 選擇 Conda 虛擬環境</div>
+            <div class="step-desc">告訴 VSCode 要用哪個 Python interpreter（也就是你在路線 A 建立的 astro 環境）。</div>
+          </div>
+        </div>
+        <div class="code-block-header">
+          <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+          <div class="code-block-label">VSCode Command Palette</div>
+        </div>
+        <div class="code-block">
+<pre><span class="c-comment"># Cmd+Shift+P → 輸入：Python: Select Interpreter</span>
+<span class="c-comment"># 選擇帶有 (astro) 字樣的那個：</span>
+<span class="c-path">~/miniconda3/envs/astro/bin/python</span>
+
+<span class="c-comment"># 之後右下角 status bar 會顯示：</span>
+<span class="c-success">⎇ Python 3.11.x ('astro': conda)</span></pre>
+        </div>
+        <div class="callout callout-success" style="margin: 0 24px 16px;">
+          <span class="callout-icon">✅</span>
+          <span>完成！現在你可以直接在 VSCode 裡打開 server 上的 <code>.py</code> 檔案，有自動補全、語法檢查、debugger，還可以在 VSCode 的 Terminal 執行，完全不需要來回複製貼上。</span>
+        </div>
+      </div>
+
+      <!-- STEP 7: Jupyter in VSCode -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-number step-num-purple">7</div>
+          <div class="step-content">
+            <div class="step-title">加碼：在 VSCode 裡直接跑 Jupyter Notebook</div>
+            <div class="step-desc">路線 B 也可以用 Jupyter，不需要另外開瀏覽器，全部在 VSCode 裡搞定。</div>
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin: 0 24px 16px;">
+          <span class="callout-icon">📓</span>
+          <span>
+            安裝 <strong>Jupyter</strong> 擴充套件（VSCode 搜尋 Jupyter，Microsoft 出品），然後：
+            <ul class="note-list" style="margin-top: 10px;">
+              <li>在 VSCode Explorer 右鍵 → <strong>New File</strong> → 取名為 <code>analysis.ipynb</code></li>
+              <li>右上角 Select Kernel → 選 astro 環境</li>
+              <li>直接在 VSCode 裡寫 notebook，輸出圖表也會內嵌顯示</li>
+            </ul>
+          </span>
+        </div>
+      </div>
+
+    </div><!-- /steps -->
+  </div><!-- /route-b -->
+
+  <hr class="divider">
+
+  <!-- QUICK REFERENCE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-cyan">📋</div>
+      <div>
+        <div class="section-title">日常工作流速查表</div>
+        <div class="section-desc">上手之後每天最常用的指令</div>
+      </div>
+    </div>
+
+    <div class="code-block-header">
+      <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+      <div class="code-block-label">bash — server 常用指令</div>
+    </div>
+    <div class="code-block">
+<pre><span class="c-comment"># 啟動 astro 環境</span>
+<span class="c-cmd">conda activate</span> astro
+
+<span class="c-comment"># 查看目前有哪些環境</span>
+<span class="c-cmd">conda env list</span>
+
+<span class="c-comment"># 安裝新套件</span>
+<span class="c-cmd">pip install</span> package_name
+
+<span class="c-comment"># 匯出目前環境所有套件（方便備份或給別人）</span>
+<span class="c-cmd">pip freeze</span> > requirements.txt
+
+<span class="c-comment"># 從 requirements.txt 重建環境</span>
+<span class="c-cmd">pip install</span> <span class="c-flag">-r</span> requirements.txt
+
+<span class="c-comment"># 離開虛擬環境（回到 base）</span>
+<span class="c-cmd">conda deactivate</span></pre>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <div class="code-block-header">
+        <div class="code-dots"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div></div>
+        <div class="code-block-label">Terminal — Mac 本機（SSH Tunnel 啟動 Jupyter）</div>
+      </div>
+      <div class="code-block">
+<pre><span class="c-comment"># 一行搞定 port forwarding（-f 背景執行）</span>
+<span class="c-cmd">ssh</span> <span class="c-flag">-N -f -L</span> <span class="c-var">8888:localhost:8888</span> astro-server
+
+<span class="c-comment"># 之後直接在瀏覽器打開</span>
+<span class="c-success">http://localhost:8888</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-note">
+    <p>有任何問題可以問<strong>學長姐</strong>，或是善用 <strong>Stack Overflow</strong> 和 <strong>Astropy 文件</strong>。</p>
+    <p style="margin-top: 8px; font-size: 11px; opacity: 0.5;">製作：給天文組學妹的愛心指南 🌌</p>
+  </div>
+
+</div><!-- /container -->
+</body>
+</html>
